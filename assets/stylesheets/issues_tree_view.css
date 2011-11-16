@@ -1,0 +1,11 @@
+tr.parent { border: 1px solid #f8f8f8; }
+tr.parent td.id { white-space: nowrap; text-align: left; }
+tr.child  { border: 1px solid #f8f8f8; }
+tr.child  td.id { white-space: nowrap; text-align: left; }
+tr.parent span.expander {background-image: url(../images/bullet_toggle_plus.png); padding-left: 8px; margin-left: 0; cursor: pointer;}
+span.empty { text-align:right; width: 100%; cursor: pointer;}
+tr.parent.open span.expander {background-image: url(../images/bullet_toggle_minus.png); cursor: pointer;}
+tr.parent.open {background-color:#ffffbb;}
+tr.hide {
+		display:none;
+	    }

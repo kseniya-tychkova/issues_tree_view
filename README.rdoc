@@ -1,0 +1,20 @@
+= issues_tree_view
+
+It is plugin for Readmine to show issues hierarchy
+
+== Install
+
+* Copy issues_tree_view vendor/plugins on your redmine path
+* Restart redmine 
+
+== Usage
+
+Go to the issues page and check "Show issues hierarchy" then just click "Apply".
+You can select filters, columns.
+Group by does not work with "Show issues hierarchy" but if you select Group by nothing is happen.
+
+== Uninstall
+
+rm -r vendor/plugins/issues_tree_view
+
+Restart redmine
