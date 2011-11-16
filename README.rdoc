@@ -1,6 +1,7 @@
 = issues_tree_view
 
-It is plugin for Readmine to show issues hierarchy
+Plugin for Readmine to show issues hierarchy.
+This plugin is a edited plugin https://github.com/MischaTheEvil/projects_tree_view/network
 
 == Install
 
