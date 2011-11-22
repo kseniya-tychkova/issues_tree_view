@@ -1,72 +1,48 @@
-<% form_tag({}) do -%>	
+<% form_tag({}) do -%>
 <%= hidden_field_tag 'back_url', url_for(params) %>
 <div class="autoscroll">
 <table class="list issues" id="issues_tree">
-	<thead><tr>
+    <thead><tr>
         <th class="checkbox hide-when-print"><%= link_to image_tag('toggle_check.png'), {}, :onclick => 'toggleIssuesSelection(Element.up(this, "form")); return false;',
                                                            :title => "#{l(:button_check_all)}/#{l(:button_uncheck_all)}" %>
         </th>
-		<th>#</th>
-        <% query.columns.each do |column| %>
-          <th><%= column.name%></th>
-        <% end %>
-	</tr></thead>
-	<tbody>
-		<% ancestors = [] %>
-		<% issues = query.issues(:include => [:assigned_to, :tracker, :priority, :category, :fixed_version],
-                              :order => "root_id, issues.lft",
-                              :offset => offset,
-                              :limit => limit) %>
-		<% for issue in issues%>
-			<% rowid = "" %>
-			<% classes = "" %>
-			<% spanicon = "" %>
-			<% openonclick = "" %>
-			<% children = issues.detect{|i| i.parent_id == issue.id}%>
-			<% if children %>
-				<% classes += " closed parent " + cycle("odd", "even") %>
-				<% rowid = "id=\""+issue.id.to_s+"span\"" %>
-				<% openonclick = "onclick=\"showHide('"+issue.id.to_s+"','"+issue.id.to_s+"span')\""%>
-				<% spanicon = "<span " + openonclick + " class=\"expander\">&nbsp  </span>" %>
-			<% else %>
-				<% classes += " child" %>
-			<% end %>
-			<% if(issue.parent_id == nil || !(issues.include?(issue.parent))) %>
-				<% ancestors.clear %>
-				<% ancestors << issue.id %>	
-			<% else %>
-				<% while (ancestors.any? && !(issue.parent_id == ancestors.last)) %>
-					<% ancestors.pop %>
-				<% end %>
-				<% classes += " hide" %>
-				<% if( !(ancestors.detect {|pid| pid == issue.parent_id })) %>
-					<% prvclasses = "closed show parent " + cycle("odd", "even") %>
-					<% ancestors.each do |pid| %>
-						<% prvclasses += " " + pid.to_s %>
-					<% end %>
-					<% openonclick = "onclick=\"showHide('"+issue.parent_id.to_s+"','"+issue.parent_id.to_s+"span')\"" %>
-					<tr class="<%= prvclasses %>" id="<%= issue.parent_id.to_s + "span" %>" >
-						<td class="checkbox hide-when-print" <%= openonclick %>><%= check_box_tag("ids[]", issue.id, false, :id => nil) %></td>
-						<td class="id" ><%= "<span style=\"padding-left: " + (2*(ancestors.length-1)).to_s + "em;\"></span>" %><%="<span " + openonclick + " class=\"expander\" >&nbsp </span>" %><%= h("<Private Issue>") %><span <%= openonclick %> class="empty">&nbsp</span></td>
-						<td colspan="<%= query.columns.length%>" <%= openonclick %> >Issue is private. </td>
-						</span>
-					</tr>
-					<% ancestors << issue.parent_id %>
-				<% end %>
-				<% ancestors.each do |pid| %>
-					<% classes += " " + pid.to_s %>
-				<% end %>
-				<% ancestors << issue.id %>
-			<% end %> 
-			<tr class="<%= classes %> issue" <%= rowid %> >
-				<td class="checkbox hide-when-print" <%= openonclick %>><%= check_box_tag("ids[]", issue.id, false, :id => nil) %></td>
-				<td class="id"><%= "<span style=\"padding-left: " + (2*(ancestors.length-1)).to_s + "em;\"></span>" %><%= spanicon %><%= link_to(h(issue.id), {:controller => 'issues', :action => 'show', :id => issue}, :class => "issue")%><span <%= openonclick %> class="empty">&nbsp</span></td>
-				<% query.columns.each do |column| %>
-				<td <%= openonclick %> class ="<%= column.css_classes %>" ><%= column_content(column, issue)%></td>
-				<% end %>
-			</tr>
-		<% end %>
-	</tbody>
+        <th>#</th>
+  <% query.columns.each do |column| %>
+        <th><%= column.name%></th>
+  <% end %>
+    </tr></thead>
+    <tbody>
+    <% issues_ancestors(issues_tree(query, offset, limit)) do |issue, ancestors| -%>
+      <% rowid = "" -%>
+      <% classes = "" -%>
+      <% spanicon = "" -%>
+      <% openonclick = "" -%>
+      <% if has_children_in?(issues, issue) -%>
+        <% classes += " closed parent " + cycle("odd", "even") -%>
+        <% rowid = "id=\"" + issue.id.to_s + "span\"" -%>
+        <% openonclick = "onclick=\"showHide('" + issue.id.to_s + "','" + issue.id.to_s + "span')\"" -%>
+        <% spanicon = "<span " + openonclick + " class=\"expander\">&nbsp  </span>" -%>
+      <% else -%>
+        <% classes += " child" -%>
+      <% end -%>
+      <% unless ancestors.empty? -%>
+        <% classes += " hide" -%>
+        <% ancestors.each do |pid| -%>
+          <% classes += " " + pid.id.to_s -%>
+        <% end -%>
+      <% end -%> 
+    <tr class="<%= classes %> issue" <%= rowid %> >
+        <td class="checkbox hide-when-print" <%= openonclick %>><%= check_box_tag("ids[]", issue.id, false, :id => nil) %></td>
+        <td class="id"><%= "<span style=\"padding-left: " + (2*(ancestors.length)).to_s + "em;\"></span>" %>
+                       <%= spanicon %>
+                       <%= link_to(h(issue.id), {:controller => 'issues', :action => 'show', :id => issue}, :class => "issue") %>
+                       <span <%= openonclick %> class="empty">&nbsp</span></td>
+      <% query.columns.each do |column| %>
+        <td <%= openonclick %> class ="<%= column.css_classes %>" ><%= column_content(column, issue) %></td>
+      <% end -%>
+    </tr>
+    <% end -%>
+    </tbody>
 </table>
 </div>
 <% end -%>

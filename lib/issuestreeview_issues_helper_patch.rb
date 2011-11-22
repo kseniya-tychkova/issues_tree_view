@@ -3,28 +3,51 @@ require_dependency 'issues_helper'
 module IssuestreeviewIssuesHelperPatch
   def self.included(base) # :nodoc:
     base.extend(ClassMethods)
-
     base.send(:include, InstanceMethods)
   end
-  
+
   module ClassMethods
   end
-  
-  module InstanceMethods
-    
-    ###
-    # Compatibility helpers
-    ###
-    
-    # Returns true if the method is defined, else it returns false
-    def users_by_role_implemented
-      return IssuesController.method_defined?("users_by_role")
+
+  module InstanceMethods   
+
+    def show_hierarchy?
+      if  params && params[:hierarchy] && params[:hierarchy] == "1"
+        return true
+      else
+        return false
+      end
     end
 
-    # Returns true if the method is defined, else it returns false
-    def authorize_global_implemented
-      return ApplicationController.method_defined?("authorize_global")
+    def issues_tree(query, offset, limit)
+      issues = query.issues(:include => [:assigned_to, :tracker, :priority, :category, :fixed_version],
+                            :order => "root_id, issues.lft",
+                            :offset => offset,
+                            :limit => limit)
+    end
+ 
+    def issues_ancestors(issues, &block)
+      ancestors = []
+      issues.each do |issue|
+        while (ancestors.any? && !issue.is_descendant_of?(ancestors.last))
+          ancestors.pop
+        end
+        yield issue, ancestors
+        ancestors << issue unless issue.leaf?
+      end
+    end
+ 
+    def has_children_in?(array, issue)
+      array.detect{|i| i.parent_id == issue.id}
     end
 
-  end # Close the module ProjectstreeviewProjectsHelperPatch::InstanceMethods
-end # Close the module ProjectstreeviewProjectsHelperPatch
+    def has_parent_in?(array, issue)
+      if issue.parent_id
+        array.detect{|i| i.id == issue.parent_id}
+      else
+        return false
+      end
+    end
+
+  end
+end

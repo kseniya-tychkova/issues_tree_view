@@ -1,6 +1,5 @@
 require 'redmine'
 
-# Patches to the Redmine core.
 require 'dispatcher'
 require 'issuestreeview_issues_helper_patch'
 Dispatcher.to_prepare do
@@ -21,5 +20,5 @@ class IssuesTreeViewListener < Redmine::Hook::ViewListener
     javascript_include_tag('issues_tree_view', :plugin => :issues_tree_view) +
     stylesheet_link_tag('issues_tree_view', :plugin => :issues_tree_view)
   end
-  
+
 end
